@@ -17,9 +17,19 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from django.urls import include
+from rest_framework.routers import DefaultRouter
+from invoices.views import InvoiceViewSet
+from invoices.views import RegistrationView, LoginView
+
+router = DefaultRouter()
+router.register(r'invoices', InvoiceViewSet, basename='invoices')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
 		path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+		path('api/', include(router.urls)),
+		path('api/auth/register', RegistrationView.as_view(), name='register'),
+		path('api/auth/login', LoginView.as_view(), name='login'),
 ]
