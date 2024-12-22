@@ -1,16 +1,16 @@
+from django.contrib.auth.models import User
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from django.urls import reverse
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
+from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_200_OK
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
-from django.core.mail import send_mail
-from django.contrib.auth import get_user_model
-from django.urls import reverse
-from django.utils.http import urlsafe_base64_encode
-from django.utils.encoding import force_bytes
-from ..utils.tokens import password_reset_token  # Import the token generator
-from django.conf import settings
 
+from invoices.utils.send_reset_password_email import send_reset_password_email
 from ..models import User
 from ..serializers import RegistrationSerializer, LoginSerializer
 
@@ -49,30 +49,27 @@ class LoginView(APIView):
 			}
 			return Response({"access_token": str(access_token), "refresh_token": str(refresh_token), "user": user_data}, status=status.HTTP_200_OK)
 		return Response({"error": "Invalid credentials"}, status=status.HTTP_400_BAD_REQUEST)
-User = get_user_model()
+
 
 class ForgotPasswordView(APIView):
+	permission_classes = [AllowAny]
 	def post(self, request):
 		email = request.data.get('email')
 		try:
 			user = User.objects.get(email=email)
 			uid = urlsafe_base64_encode(force_bytes(user.pk))
 			token = password_reset_token.make_token(user)
+
 			reset_url = request.build_absolute_uri(
 				reverse('reset-password', kwargs={'uidb64': uid, 'token': token})
 			)
-			send_mail(
-				subject="Reset Your Password",
-				message=f"Click the link to reset your password: {reset_url}",
-				from_email=settings.DEFAULT_FROM_EMAIL,
-				recipient_list=[email],
-			)
-			return Response({'message': 'Password reset link sent.'})
+
+			send_reset_password_email(user. email, reset_url)
+
+			return Response({'message': 'Password reset link sent.'}, status=200)
 		except User.DoesNotExist:
 			return Response({'error': 'Invalid email address.'}, status=400)
 
-from django.utils.http import urlsafe_base64_decode
-from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_200_OK
 
 class ResetPasswordView(APIView):
 	def post(self, request, uidb64, token):
@@ -99,3 +96,5 @@ class LogoutView(APIView):
 	def post(self, request):
 		request.user.auth_token.delete()
 		return Response(status=status.HTTP_200_OK)
+
+password_reset_token = PasswordResetTokenGenerator()

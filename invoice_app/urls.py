@@ -27,11 +27,11 @@ router.register(r'invoices', InvoiceViewSet, basename='invoices')
 
 urlpatterns = [
     	path('admin/', admin.site.urls),
-		path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    	path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-		path('api/', include(router.urls)),
-		path('api/auth/register', RegistrationView.as_view(), name='register'),
-		path('api/auth/login', LoginView.as_view(), name='login'),
-		path('auth/forgot-password', ForgotPasswordView.as_view(), name='forgot-password'),
-   		path('auth/reset-password/<uidb64>/<token>', ResetPasswordView.as_view(), name='reset-password'),
+		path('api/v1/token', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    	path('api/v1/token/refresh', TokenRefreshView.as_view(), name='token_refresh'),
+		path('api/v1/auth/register', RegistrationView.as_view(), name='register'),
+		path('api/v1/auth/login', LoginView.as_view(), name='login'),
+		path('api/v1/auth/forgot-password', ForgotPasswordView.as_view(), name='forgot-password'),
+   		path('api/v1/reset-password/<uidb64>/<token>', ResetPasswordView.as_view(), name='reset-password'),
+		path('api/v1/', include(router.urls)),
 ]
