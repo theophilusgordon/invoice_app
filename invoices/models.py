@@ -9,6 +9,7 @@ class User(AbstractUser):
     last_name = models.CharField(max_length=50)
     profile_photo_url = models.CharField(max_length=500)
     phone = models.CharField(max_length=15)
+    is_staff = models.BooleanField(default=False)
 
 class Address(models.Model):
     street = models.CharField(max_length=255)
