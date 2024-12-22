@@ -1,3 +1,3 @@
 # serializers/__init__.py
-from .user_views import RegistrationView, LoginView
+from .auth_views import RegistrationView, LoginView, ForgotPasswordView, ResetPasswordView
 from .invoice_views import InvoiceViewSet
