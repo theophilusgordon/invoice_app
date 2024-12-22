@@ -21,7 +21,7 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
         return Response(serializer.data)
-
+    
     @action(detail=True, methods=['post'])
     def change_status(self, request, pk=None):
         """
