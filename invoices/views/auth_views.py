@@ -9,6 +9,8 @@ from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_200_OK
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.permissions import IsAuthenticated
+from django.contrib.auth import authenticate
 
 from invoices.utils.send_reset_password_email import send_reset_password_email
 from ..models import User
@@ -90,6 +92,32 @@ class ResetPasswordView(APIView):
 			return Response({'message': 'Password has been reset successfully.'}, status=HTTP_200_OK)
 		except (User.DoesNotExist, ValueError, TypeError):
 			return Response({'error': 'Invalid token or user ID.'}, status=HTTP_400_BAD_REQUEST)
+
+class ChangePasswordView(APIView):
+	permission_classes = [IsAuthenticated]
+
+	def post(self, request):
+		old_password = request.data.get('old_password')
+		new_password = request.data.get('new_password')
+		confirm_password = request.data.get('confirm_password')
+
+		if not old_password or not new_password or not confirm_password:
+			return Response({'error': 'All fields are required.'}, status=400)
+
+		user = authenticate(username=request.user.username, password=old_password)
+		if not user:
+			return Response({'error': 'Old password is incorrect.'}, status=400)
+
+		if new_password != confirm_password:
+			return Response({'error': 'New passwords do not match.'}, status=400)
+
+		if len(new_password) < 8:
+			return Response({'error': 'New password must be at least 8 characters long.'}, status=400)
+
+		user.set_password(new_password)
+		user.save()
+
+		return Response({'message': 'Password changed successfully.'}, status=200)
 
 
 class LogoutView(APIView):
