@@ -9,7 +9,12 @@ class User(AbstractUser):
     last_name = models.CharField(max_length=50)
     profile_photo_url = models.CharField(max_length=500)
     phone = models.CharField(max_length=15)
+    address = models.OneToOneField('Address', on_delete=models.CASCADE, null=True, blank=True)
     is_staff = models.BooleanField(default=False)
+
+    @property
+    def full_name(self):
+        return f"{self.first_name} {self.last_name}"
 
 class Address(models.Model):
     street = models.CharField(max_length=255)
@@ -24,7 +29,7 @@ class Item(models.Model):
     name = models.CharField(max_length=255)
     quantity = models.PositiveIntegerField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
-    total = models.DecimalField(max_digits=10, decimal_places=2)
+    total = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
 
     def save(self, *args, **kwargs):
         self.total = self.quantity * self.price
@@ -51,7 +56,7 @@ class Invoice(models.Model):
     sender_address = models.OneToOneField(Address, on_delete=models.CASCADE, related_name='sender_invoices')
     client_address = models.OneToOneField(Address, on_delete=models.CASCADE, related_name='client_invoices')
     items = models.ManyToManyField(Item, related_name='invoices')
-    total = models.DecimalField(max_digits=15, decimal_places=2)
+    total = models.DecimalField(max_digits=15, decimal_places=2, default=0.00)
 
     def calculate_total(self):
         """Calculate and update the invoice total."""

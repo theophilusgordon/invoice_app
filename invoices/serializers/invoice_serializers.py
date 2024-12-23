@@ -4,36 +4,33 @@ from .address_serializers import AddressSerializer
 from .item_serializers import ItemSerializer
 
 class InvoiceSerializer(serializers.ModelSerializer):
-    sender_address = AddressSerializer()
-    client_address = AddressSerializer()
+    sender_address = AddressSerializer(required=False)
+    client_address = AddressSerializer(required=False)
     items = ItemSerializer(many=True)
 
     class Meta:
         model = Invoice
         fields = [
             'id',
-            'created_at',
-            'payment_due',
             'description',
+            'payment_due',
             'payment_terms',
+            'status',
+            'items',
             'client_name',
             'client_email',
-            'status',
-            'sender_address',
             'client_address',
-            'items',
+            'sender_address',
+            'created_at',
             'total',
         ]
+        read_only_fields = ['id', 'client_name', 'client_email', 'client_address', 'sender_address', 'created_at', 'total']
 
     def create(self, validated_data):
-        sender_address_data = validated_data.pop('sender_address')
-        client_address_data = validated_data.pop('client_address')
         items_data = validated_data.pop('items')
 
         invoice = Invoice.objects.create(
             **validated_data,
-            sender_address=sender_address_data,
-            client_address=client_address_data
         )
 
         for item_data in items_data:
@@ -42,17 +39,7 @@ class InvoiceSerializer(serializers.ModelSerializer):
         return invoice
 
     def update(self, instance, validated_data):
-        sender_address_data = validated_data.pop('sender_address', None)
-        client_address_data = validated_data.pop('client_address', None)
         items_data = validated_data.pop('items', None)
-
-        if sender_address_data:
-            for attr, value in sender_address_data.items():
-                setattr(instance.sender_address, attr, value)
-
-        if client_address_data:
-            for attr, value in client_address_data.items():
-                setattr(instance.client_address, attr, value)
 
         if items_data:
             instance.items.all().delete()

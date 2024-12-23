@@ -21,9 +21,11 @@ from django.urls import include
 from rest_framework.routers import DefaultRouter
 from invoices.views import InvoiceViewSet
 from invoices.views import RegistrationView, LoginView, ForgotPasswordView, ResetPasswordView, ChangePasswordView
+from invoices.views.item_views import ItemViewSet
 
 router = DefaultRouter()
 router.register(r'invoices', InvoiceViewSet, basename='invoices')
+router.register(r'items', ItemViewSet, basename='items')
 
 urlpatterns = [
     	path('admin/', admin.site.urls),

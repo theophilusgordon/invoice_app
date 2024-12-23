@@ -1,18 +1,34 @@
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
-from ..models import Invoice
+from rest_framework.permissions import IsAuthenticated
+
+from ..models import Invoice, Item
 from ..serializers import InvoiceSerializer
 
 class InvoiceViewSet(viewsets.ModelViewSet):
     queryset = Invoice.objects.all()
     serializer_class = InvoiceSerializer
+    permission_classes = [IsAuthenticated]
 
     def create(self, request, *args, **kwargs):
+        user = request.user
+
+        customer_name = user.full_name
+        customer_email = user.email
+        customer_address = user.address
+
+        request.data.update({
+            "customer_name": customer_name,
+            "customer_email": customer_email,
+            "customer_address": customer_address,
+        })
+
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)
