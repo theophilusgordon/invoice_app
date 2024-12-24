@@ -1,5 +1,7 @@
+from django.contrib.auth.password_validation import validate_password
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
+from django.core.exceptions import ValidationError
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -117,8 +119,10 @@ class AuthViewSet(viewsets.ViewSet):
         if new_password != confirm_password:
             return Response({'error': 'New passwords do not match.'}, status=400)
 
-        if len(new_password) < 8:
-            return Response({'error': 'New password must be at least 8 characters long.'}, status=400)
+        try:
+            validate_password(new_password, user=user)  # Validate the password
+        except ValidationError as e:
+            return Response({'error': list(e)}, status=400)
 
         user.set_password(new_password)
         user.save()
