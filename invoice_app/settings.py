@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 	"invoices",
+    "auth_app",
 	"rest_framework",
 	"rest_framework.authtoken",
 ]
@@ -81,7 +82,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'invoice_app.wsgi.application'
 
-AUTH_USER_MODEL = 'invoices.User'
+AUTH_USER_MODEL = 'auth_app.User'
 
 # Rest Framework
 # JWT Settings

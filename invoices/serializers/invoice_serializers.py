@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from ..models import Invoice, Item
-from .address_serializers import AddressSerializer
+from auth_app.serializers.address_serializers import AddressSerializer
 from .item_serializers import ItemSerializer
 
 class InvoiceSerializer(serializers.ModelSerializer):
