@@ -1,3 +1,4 @@
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets
 
 from .models import Item
@@ -9,15 +10,12 @@ class ItemViewSet(viewsets.ModelViewSet):
     serializer_class = ItemSerializer
     permission_classes = [IsAuthenticated]
 
+    @swagger_auto_schema(
+        request_body=ItemSerializer,
+        responses={201: 'Item created successfully.'}
+    )
     def perform_create(self, serializer):
         """
         Create a new item.
-
-        Example payload:
-        {
-            "name": "Service 1",
-            "quantity": 2,
-            "price": 100
-        }
         """
         serializer.save()

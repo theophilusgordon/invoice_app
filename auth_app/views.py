@@ -1,4 +1,5 @@
 from django.contrib.auth.password_validation import validate_password
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from django.core.exceptions import ValidationError
@@ -19,25 +20,13 @@ password_reset_token = PasswordResetTokenGenerator()
 
 class AuthViewSet(viewsets.ViewSet):
     @action(detail=False, methods=['post'], permission_classes=[AllowAny])
+    @swagger_auto_schema(
+        request_body=RegistrationSerializer,
+        responses={201: 'User registered successfully.'}
+    )
     def register(self, request):
         """
         Register a new user.
-
-        Example payload:
-        {
-            "email": "johndoe@example.com",
-            "password": "password",
-            "first_name": "John",
-            "last_name": "Doe",
-            "phone": "1234567890",
-            "profile_photo_url": "https://example.com/photo.jpg",
-            "address": {
-                "street": "123 Main St",
-                "city": "Springfield",
-                "post_code": "12345",
-                "country": "USA"
-            }
-        }
         """
         serializer = RegistrationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -60,15 +49,13 @@ class AuthViewSet(viewsets.ViewSet):
             status=status.HTTP_201_CREATED)
 
     @action(detail=False, methods=['post'], permission_classes=[AllowAny])
+    @swagger_auto_schema(
+        request_body=LoginSerializer,
+        responses={200: 'User logged in successfully.'}
+    )
     def login(self, request):
         """
         Login a user.
-
-        Example payload:
-        {
-            "email": "johndoe@example.com",
-            "password": "password"
-        }
         """
         serializer = LoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -94,14 +81,13 @@ class AuthViewSet(viewsets.ViewSet):
         return Response({"error": "Invalid credentials"}, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=False, methods=['post'], permission_classes=[AllowAny])
+    @swagger_auto_schema(
+        request_body=LoginSerializer,
+        responses={200: 'Password reset link sent.'}
+    )
     def forgot_password(self, request):
         """
         Send a password reset link to the user's email address.
-
-        Example payload:
-        {
-            "email": "johndoe@example.com"
-        }
         """
         email = request.data.get('email')
         try:
@@ -120,14 +106,13 @@ class AuthViewSet(viewsets.ViewSet):
             return Response({'error': 'Invalid email address.'}, status=400)
 
     @action(detail=False, methods=['post'], permission_classes=[AllowAny], url_path='reset-password/(?P<uidb64>[^/.]+)/(?P<token>[^/.]+)')
+    @swagger_auto_schema(
+        request_body=LoginSerializer,
+        responses={200: 'Password reset successfully.'}
+    )
     def reset_password(self, request, uidb64, token):
         """
         Reset the user's password.
-
-        Example payload:
-        {
-            "password": "new_password"
-        }
         """
         try:
             uid = force_str(urlsafe_base64_decode(uidb64))
@@ -153,16 +138,13 @@ class AuthViewSet(viewsets.ViewSet):
             return Response({'error': 'Invalid token or user ID.'}, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=False, methods=['post'], permission_classes=[IsAuthenticated], url_path='change-password')
+    @swagger_auto_schema(
+        request_body=LoginSerializer,
+        responses={200: 'Password changed successfully.'}
+    )
     def change_password(self, request):
         """
         Change the user's password.
-
-        Example payload:
-        {
-            "old_password": "old_password",
-            "new_password": "new_password",
-            "confirm_password": "new_password"
-        }
         """
         old_password = request.data.get('old_password')
         new_password = request.data.get('new_password')
@@ -189,6 +171,10 @@ class AuthViewSet(viewsets.ViewSet):
         return Response({'message': 'Password changed successfully.'}, status=200)
 
     @action(detail=False, methods=['post'], permission_classes=[IsAuthenticated])
+    @swagger_auto_schema(
+        request_body=LoginSerializer,
+        responses={200: 'User logged out successfully.'}
+    )
     def logout(self, request):
         """
         Logout the user.
