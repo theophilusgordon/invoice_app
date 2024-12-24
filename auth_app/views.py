@@ -11,7 +11,7 @@ from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 
 from .models import User
 from .serializers import RegistrationSerializer, LoginSerializer
-from invoices.utils.send_reset_password_email import send_reset_password_email
+from core.helpers.send_reset_password_email import send_reset_password_email
 
 password_reset_token = PasswordResetTokenGenerator()
 
