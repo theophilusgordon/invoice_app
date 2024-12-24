@@ -5,7 +5,7 @@ from auth_app.models import User
 class RegistrationSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['email', 'password', 'first_name', 'last_name']
+        fields = ['id', 'email', 'password', 'first_name', 'last_name', 'full_name', 'phone', 'profile_photo_url', 'address']
 
     def create(self, validated_data):
         validated_data['password'] = make_password(validated_data['password'])
