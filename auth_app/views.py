@@ -20,6 +20,25 @@ password_reset_token = PasswordResetTokenGenerator()
 class AuthViewSet(viewsets.ViewSet):
     @action(detail=False, methods=['post'], permission_classes=[AllowAny])
     def register(self, request):
+        """
+        Register a new user.
+
+        Example payload:
+        {
+            "email": "johndoe@example.com",
+            "password": "password",
+            "first_name": "John",
+            "last_name": "Doe",
+            "phone": "1234567890",
+            "profile_photo_url": "https://example.com/photo.jpg",
+            "address": {
+                "street": "123 Main St",
+                "city": "Springfield",
+                "post_code": "12345",
+                "country": "USA"
+            }
+        }
+        """
         serializer = RegistrationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
@@ -42,6 +61,15 @@ class AuthViewSet(viewsets.ViewSet):
 
     @action(detail=False, methods=['post'], permission_classes=[AllowAny])
     def login(self, request):
+        """
+        Login a user.
+
+        Example payload:
+        {
+            "email": "johndoe@example.com",
+            "password": "password"
+        }
+        """
         serializer = LoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         email = serializer.validated_data["email"]
@@ -67,6 +95,14 @@ class AuthViewSet(viewsets.ViewSet):
 
     @action(detail=False, methods=['post'], permission_classes=[AllowAny])
     def forgot_password(self, request):
+        """
+        Send a password reset link to the user's email address.
+
+        Example payload:
+        {
+            "email": "johndoe@example.com"
+        }
+        """
         email = request.data.get('email')
         try:
             user = User.objects.get(email=email)
@@ -85,6 +121,14 @@ class AuthViewSet(viewsets.ViewSet):
 
     @action(detail=False, methods=['post'], permission_classes=[AllowAny], url_path='reset-password/(?P<uidb64>[^/.]+)/(?P<token>[^/.]+)')
     def reset_password(self, request, uidb64, token):
+        """
+        Reset the user's password.
+
+        Example payload:
+        {
+            "password": "new_password"
+        }
+        """
         try:
             uid = force_str(urlsafe_base64_decode(uidb64))
             user = User.objects.get(pk=uid)
@@ -96,6 +140,11 @@ class AuthViewSet(viewsets.ViewSet):
             if not new_password:
                 return Response({'error': 'Password is required.'}, status=status.HTTP_400_BAD_REQUEST)
 
+            try:
+                validate_password(new_password, user=user)  # Validate the password
+            except ValidationError as e:
+                return Response({'error': list(e)}, status=400)
+
             user.set_password(new_password)
             user.save()
 
@@ -105,6 +154,16 @@ class AuthViewSet(viewsets.ViewSet):
 
     @action(detail=False, methods=['post'], permission_classes=[IsAuthenticated], url_path='change-password')
     def change_password(self, request):
+        """
+        Change the user's password.
+
+        Example payload:
+        {
+            "old_password": "old_password",
+            "new_password": "new_password",
+            "confirm_password": "new_password"
+        }
+        """
         old_password = request.data.get('old_password')
         new_password = request.data.get('new_password')
         confirm_password = request.data.get('confirm_password')
@@ -131,5 +190,13 @@ class AuthViewSet(viewsets.ViewSet):
 
     @action(detail=False, methods=['post'], permission_classes=[IsAuthenticated])
     def logout(self, request):
+        """
+        Logout the user.
+
+        Example payload:
+        {
+            "refresh_token": "refresh
+        }
+        """
         request.user.auth_token.delete()
         return Response(status=status.HTTP_200_OK)
