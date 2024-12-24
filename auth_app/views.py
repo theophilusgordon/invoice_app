@@ -103,7 +103,7 @@ class AuthViewSet(viewsets.ViewSet):
         except (User.DoesNotExist, ValueError, TypeError):
             return Response({'error': 'Invalid token or user ID.'}, status=status.HTTP_400_BAD_REQUEST)
 
-    @action(detail=False, methods=['post'], permission_classes=[IsAuthenticated])
+    @action(detail=False, methods=['post'], permission_classes=[IsAuthenticated], url_path='change-password')
     def change_password(self, request):
         old_password = request.data.get('old_password')
         new_password = request.data.get('new_password')
